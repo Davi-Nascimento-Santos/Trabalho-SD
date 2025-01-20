@@ -1,71 +1,82 @@
-from tkinter import Tk, Label, Entry, Button, Frame, StringVar
+from tkinter import Tk, Label, Entry, Button, Frame
 
-class Menu:
+class SimulationMenu:
     def __init__(self):
+        self.setup_ui()
+
+    def setup_ui(self):
+        # Configuração inicial da janela
         self.root = Tk()
-        self.root.title("Simulação")
+        self.root.title("Simulação Kubernetes")
         self.root.geometry("400x350")
         self.root.configure(bg="#e0e0e0")
 
+        # Configuração do frame principal
         self.frame = Frame(self.root, bg="#ffffff", bd=2, relief="groove")
         self.frame.pack(pady=20, padx=20, fill="both", expand=True)
 
-        self.title_label = Label(self.frame, text="Configuração da Simulação", font=("Helvetica", 16, "bold"), bg="#ffffff")
-        self.title_label.grid(row=0, columnspan=2, pady=10)
+        # Título
+        Label(self.frame, text="Configuração da Simulação", font=("Helvetica", 16, "bold"), bg="#ffffff").grid(row=0, columnspan=2, pady=10)
 
-        self.app_name_label = Label(self.frame, text="Nome da Aplicação:", bg="#ffffff")
-        self.app_name_label.grid(row=1, column=0, padx=10, pady=5, sticky='e')
-        self.app_name_entry = Entry(self.frame)
-        self.app_name_entry.grid(row=1, column=1, padx=10, pady=5)
+        # Campos de entrada
+        self.create_label_and_entry("Nome da Aplicação:", 1)
+        self.create_label_and_entry("CPU:", 2)
+        self.create_label_and_entry("RAM:", 3)
+        self.create_label_and_entry("ROM:", 4)
 
-        self.cpu_label = Label(self.frame, text="CPU:", bg="#ffffff")
-        self.cpu_label.grid(row=2, column=0, padx=10, pady=5, sticky='e')
-        self.cpu_entry = Entry(self.frame)
-        self.cpu_entry.grid(row=2, column=1, padx=10, pady=5)
-
-        self.ram_label = Label(self.frame, text="RAM:", bg="#ffffff")
-        self.ram_label.grid(row=3, column=0, padx=10, pady=5, sticky='e')
-        self.ram_entry = Entry(self.frame)
-        self.ram_entry.grid(row=3, column=1, padx=10, pady=5)
-
-        self.rom_label = Label(self.frame, text="ROM:", bg="#ffffff")
-        self.rom_label.grid(row=4, column=0, padx=10, pady=5, sticky='e')
-        self.rom_entry = Entry(self.frame)
-        self.rom_entry.grid(row=4, column=1, padx=10, pady=5)
-
+        # Labels de feedback
         self.error_label = Label(self.frame, text="", fg="red", bg="#ffffff")
         self.error_label.grid(row=5, columnspan=2, pady=5)
 
-        self.start_button = Button(self.frame, text="Iniciar", command=self.on_start, bg="#4CAF50", fg="white", font=("Helvetica", 12, "bold"))
-        self.start_button.grid(row=6, columnspan=2, pady=10)
-
         self.success_label = Label(self.frame, text="", fg="green", bg="#ffffff")
-        self.success_label.grid(row=7, columnspan=2, pady=5)
+        self.success_label.grid(row=6, columnspan=2, pady=5)
 
+        # Botão de início
+        Button(self.frame, text="Iniciar", command=self.start_simulation, bg="#4CAF50", fg="white", font=("Helvetica", 12, "bold"))
+        .grid(row=7, columnspan=2, pady=10)
+
+        # Fechar aplicação de forma segura
         self.root.protocol("WM_DELETE_WINDOW", self.root.destroy)
         self.root.mainloop()
 
-    def on_start(self):
-        app_name = self.app_name_entry.get()
-        cpu = self.cpu_entry.get()
-        ram = self.ram_entry.get()
-        rom = self.rom_entry.get()
+    def create_label_and_entry(self, text, row):
+        """Cria um par de Label e Entry para o formulário."""
+        label = Label(self.frame, text=text, bg="#ffffff")
+        label.grid(row=row, column=0, padx=10, pady=5, sticky='e')
+        entry = Entry(self.frame)
+        entry.grid(row=row, column=1, padx=10, pady=5)
+        setattr(self, f"entry_{row}", entry)
 
+    def validate_inputs(self, app_name, cpu, ram, rom):
+        """Valida os campos de entrada e retorna erros, se existirem."""
         if not app_name or not cpu or not ram or not rom:
-            self.error_label.config(text="Erro: Todos os campos devem ser preenchidos.")
-            self.success_label.config(text="")
-            print("Erro: Todos os campos devem ser preenchidos.")
-        else:
-            try:
-                cpu = int(cpu)
-                ram = int(ram)
-                rom = int(rom)
-            except ValueError:
-                self.error_label.config(text="Erro: CPU, RAM e ROM devem ser números inteiros.")
-                self.success_label.config(text="")
-                print("Erro: CPU, RAM e ROM devem ser números inteiros.")
-                return
+            return "Erro: Todos os campos devem ser preenchidos."
 
+        try:
+            cpu = int(cpu)
+            ram = int(ram)
+            rom = int(rom)
+        except ValueError:
+            return "Erro: CPU, RAM e ROM devem ser números inteiros."
+
+        return None
+
+    def start_simulation(self):
+        """Executa a lógica de inicialização da simulação."""
+        app_name = self.entry_1.get()
+        cpu = self.entry_2.get()
+        ram = self.entry_3.get()
+        rom = self.entry_4.get()
+
+        error_message = self.validate_inputs(app_name, cpu, ram, rom)
+
+        if error_message:
+            self.error_label.config(text=error_message)
+            self.success_label.config(text="")
+        else:
             self.error_label.config(text="")
-            self.success_label.config(text="Adicionado com sucesso!")
-            print(f"Simulação iniciada com {app_name}, CPU: {cpu}, RAM: {ram}, ROM: {rom}")
+            self.success_label.config(text="Simulação iniciada com sucesso!")
+            print(f"Simulação iniciada: {app_name}, CPU: {cpu}, RAM: {ram}, ROM: {rom}")
+
+if __name__ == "__main__":
+    SimulationMenu()
